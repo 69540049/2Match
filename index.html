@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senior & Junior Match</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div>
+    <div class="eyebrow">BUU • Senior & Junior connection</div>
+    <h1>Find your Senior ✨</h1>
+    <p>ค้นหาพี่รหัส เลือกคนที่ใช่ แล้วรอการตอบรับจากพี่</p>
+  </div>
+  <div id="userBox" class="userbox hidden">
+    <img id="userAvatar" alt="" referrerpolicy="no-referrer">
+    <div><b id="userName"></b><small id="userEmail"></small></div>
+    <button class="ghost" id="btnSignOut">ออกจากระบบ</button>
+  </div>
+</header>
+
+<div id="configWarn" class="notice error hidden">ยังไม่ได้ตั้งค่า Firebase — กรุณาแก้ไขไฟล์ <b>js/firebase-config.js</b> ตามขั้นตอนใน README.md</div>
+<div id="globalError" class="notice error hidden"></div>
+<div id="loadingView" class="empty">กำลังโหลด…</div>
+
+<!-- LOGIN -->
+<section id="loginView" class="panel center hidden">
+  <div style="font-size:46px">🧩</div>
+  <h2>เข้าสู่ระบบ</h2>
+  <p class="muted" id="loginHint">ใช้บัญชี Google เพื่อเข้าสู่ระบบ Senior & Junior Match</p>
+  <button id="btnGoogle" class="google">
+    <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+    Sign in with Google
+  </button>
+  <div id="loginMsg" class="small" style="margin-top:12px"></div>
+</section>
+
+<nav class="tabs hidden" id="tabs"></nav>
+
+<!-- REGISTER -->
+<section id="registerView" class="hidden">
+  <div class="grid">
+    <div class="panel">
+      <h2>ลงทะเบียนครั้งแรก</h2>
+      <p class="muted">ผูกบัญชี Google นี้กับรหัสนิสิตและเลือกบทบาท (เลือกได้ครั้งเดียว หากผิดให้ติดต่อ Admin)</p>
+      <div class="roles">
+        <label><input type="radio" name="role" value="junior" checked><span><b>🎓 Junior</b><small>น้องรหัส — ดูคำใบ้และเลือกพี่</small></span></label>
+        <label><input type="radio" name="role" value="senior"><span><b>🌟 Senior</b><small>พี่รหัส — สร้างโปรไฟล์และตอบรับน้อง</small></span></label>
+      </div>
+      <div class="field"><label for="regId">รหัสนิสิต</label><input id="regId" inputmode="numeric" maxlength="8" placeholder="เช่น 68540001"></div>
+      <div class="field"><label for="regName">ชื่อ-นามสกุล / ชื่อเล่น</label><input id="regName" maxlength="60" placeholder="เช่น พี่แป้ง"></div>
+      <div id="regPhotoBox" class="field hidden">
+        <label for="regPhoto">รูปโปรไฟล์ (Senior)</label>
+        <div class="profile"><div class="avatar" id="regPreview">🌟</div><input type="file" id="regPhoto" accept="image/*"></div>
+      </div>
+      <button class="primary" id="btnRegister">ลงทะเบียน</button>
+      <div id="regMsg" class="small" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>ขั้นตอนการ Match</h2>
+      <div class="clue"><b>STEP 1</b>เข้าสู่ระบบด้วย Google และผูกรหัสนิสิต</div>
+      <div class="clue"><b>STEP 2</b>Junior อ่านคำใบ้ แล้วเลือก Senior ได้ไม่เกิน <span class="maxPicks">2</span> คน</div>
+      <div class="clue"><b>STEP 3</b>กดยืนยันการเลือก และรอ Senior ตอบรับ</div>
+      <div class="notice">การเลือกของ Junior ยังไม่ถือว่า Match สำเร็จ จนกว่า Senior จะกดตอบรับ</div>
+    </div>
+  </div>
+</section>
+
+<!-- JUNIOR -->
+<section id="juniorView" class="hidden">
+  <div class="panel">
+    <div class="row">
+      <div><h2 id="juniorWelcome">Junior</h2><p class="muted">คำใบ้สำหรับรหัสนิสิตของคุณ</p></div>
+      <div style="text-align:right;flex:0 0 auto"><span class="badge" id="pickCount">เลือกแล้ว 0/2</span></div>
+    </div>
+    <div id="clueList"><div class="empty">กำลังโหลดคำใบ้…</div></div>
+    <div id="juniorStatus" class="notice hidden"></div>
+    <h2 style="margin-top:22px">เลือก Senior ที่ต้องการ Match</h2>
+    <p class="muted">เลือกได้สูงสุด <span class="maxPicks">2</span> คน แล้วกด “ยืนยันการเลือก” ระบบจะส่งคำขอไปยังหน้า Senior แบบเรียลไทม์</p>
+    <div id="seniorOptions"></div>
+    <div class="row" style="margin-top:18px" id="juniorActions">
+      <button class="secondary" id="btnClearPicks">ล้างตัวเลือก</button>
+      <button class="primary" id="btnSubmitPicks">ยืนยันการเลือก</button>
+    </div>
+  </div>
+</section>
+
+<!-- SENIOR -->
+<section id="seniorView" class="hidden">
+  <div class="grid">
+    <div class="panel">
+      <h2>โปรไฟล์ Senior</h2>
+      <p class="muted">Junior จะเห็นชื่อและรูปนี้ในรายการให้เลือก</p>
+      <div class="profile"><div class="avatar" id="spPreview">🌟</div><div><label class="small" for="spPhoto">เปลี่ยนรูปภาพ</label><br><input type="file" id="spPhoto" accept="image/*"></div></div>
+      <div class="field"><label>รหัสนิสิต</label><input id="spId" disabled></div>
+      <div class="field"><label for="spName">ชื่อ-นามสกุล / ชื่อเล่น</label><input id="spName" maxlength="60"></div>
+      <button class="primary" id="btnSaveSenior">บันทึกโปรไฟล์</button>
+      <div id="spMsg" class="small" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>คำขอจาก Junior</h2>
+      <p class="muted">ดูจำนวนคนที่เลือกคุณ และกด Match เพื่อตอบรับ (Junior แต่ละคน Match ได้กับ Senior เพียงคนเดียว)</p>
+      <div class="statrow">
+        <div class="stat"><strong id="incomingCount">0</strong><span>Junior เลือกคุณ</span></div>
+        <div class="stat"><strong id="acceptedCount">0</strong><span>Match สำเร็จ</span></div>
+        <div class="stat"><strong id="remainingCount">0</strong><span>รอตอบรับ</span></div>
+      </div>
+      <div id="seniorRequests"><div class="empty">ยังไม่มีคำขอจาก Junior</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN -->
+<section id="adminView" class="hidden">
+  <div class="panel">
+    <h2>⚙️ Admin dashboard</h2>
+    <p class="muted">ข้อมูลทั้งหมดอยู่ใน Cloud Firestore (ฐานข้อมูลกลาง) และอัปเดตแบบเรียลไทม์</p>
+    <div class="statrow four">
+      <div class="stat"><strong id="adSeniors">0</strong><span>Senior</span></div>
+      <div class="stat"><strong id="adJuniors">0</strong><span>Junior</span></div>
+      <div class="stat"><strong id="adSubmitted">0</strong><span>Junior ส่งคำขอแล้ว</span></div>
+      <div class="stat"><strong id="adMatches">0</strong><span>Match สำเร็จ</span></div>
+    </div>
+    <div class="row">
+      <button class="secondary" id="btnExport">Export JSON</button>
+      <button class="danger" id="btnResetRequests">ล้างคำขอ/Match ทั้งหมด</button>
+    </div>
+  </div>
+
+  <div class="grid section-gap">
+    <div class="panel">
+      <h2>คำใบ้ (Clues)</h2>
+      <p class="muted">มีคำใบ้ในระบบ <b id="adClues">0</b> รหัส · นำเข้าชุดตั้งต้น หรืออัปโหลดไฟล์ JSON / CSV (คอลัมน์: รหัสนิสิต, คำใบ้1, คำใบ้2, …)</p>
+      <div class="row">
+        <button class="primary" id="btnImportDefault">นำเข้าคำใบ้ตั้งต้น</button>
+        <label class="secondary" style="text-align:center;border-radius:12px;padding:11px 16px;font-weight:700;cursor:pointer;background:#edf2f8">อัปโหลดไฟล์<input type="file" id="clueFile" accept=".json,.csv" hidden></label>
+      </div>
+      <div id="clueMsg" class="small" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>ผู้ดูแลระบบ (Admins)</h2>
+      <p class="muted">เพิ่มอีเมล Google ของผู้ดูแลคนอื่น</p>
+      <div class="row"><input id="newAdmin" type="email" placeholder="name@example.com" style="border:1px solid #d8e0eb;border-radius:11px;padding:11px;flex:2"><button class="primary" id="btnAddAdmin">เพิ่ม</button></div>
+      <div id="adminList" class="tablewrap"></div>
+    </div>
+  </div>
+
+  <div class="panel section-gap">
+    <h2>Match & คำขอ</h2>
+    <div id="matchTable" class="tablewrap"></div>
+  </div>
+
+  <div class="panel section-gap">
+    <h2>ผู้ใช้ทั้งหมด</h2>
+    <p class="muted">ลบผู้ใช้เพื่อให้ลงทะเบียนใหม่ได้ (เช่น เลือกบทบาทหรือรหัสผิด)</p>
+    <div class="row"><input id="userFilter" placeholder="ค้นหารหัส / ชื่อ / อีเมล" style="border:1px solid #d8e0eb;border-radius:11px;padding:11px"></div>
+    <div id="userTable" class="tablewrap"></div>
+  </div>
+</section>
+
+<footer>Senior & Junior Match • BUU 69 • Google SSO + Firebase</footer>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
